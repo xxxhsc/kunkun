@@ -1,0 +1,17 @@
+
+server:
+  port: 8080
+#  servlet:
+#    context-path: /Student
+
+spring:
+  jpa:
+    database: MYSQL
+    show-sql: true
+    hibernate.ddl-auto: update
+  datasource:
+    url:  jdbc:mysql://127.0.0.1:3306/wxtb?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 123456
+
