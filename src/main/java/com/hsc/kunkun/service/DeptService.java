@@ -11,13 +11,48 @@ import java.util.List;
  * @Date: 2019/7/22 10:22
  */
 public interface DeptService {
-    void createDepartment(String accessToken, Dept department);
 
+//数据库操作
+    /**
+     * 查找数据所有数据
+     * @return
+     */
     List<Dept> queryAll();
 
-    void save(Dept dept);
 
-    void deleteById(Integer id  );
 
+
+
+//接口调用同步操作
+    /**
+     * 添加一个部门
+     * @param accessToken
+     * @param department
+     */
+    String createDepartment(String accessToken, Dept department);
+
+
+    /**
+     * 通过部门的id 删除部门
+     * @param id
+     */
+    String deleteDepartmentById(String accessToken,String id  );
+
+    /**
+     * 通过部门id查部门
+     * @param id
+     * @return
+     */
     Dept findById(Integer id);
+
+    /**
+     * 获取所有的部门id
+     * @param accessToken
+     * @param departmentId
+     * @return
+     */
+    List<String > getDepartmentListid(String accessToken,String departmentId);
+
+
+
 }

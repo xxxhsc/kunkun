@@ -14,6 +14,8 @@ import java.util.Optional;
 @Repository
 public interface DeptDao extends JpaRepository<Dept,Integer>{
 
+
+
         Optional<Dept> findById (Integer id);
 
 }

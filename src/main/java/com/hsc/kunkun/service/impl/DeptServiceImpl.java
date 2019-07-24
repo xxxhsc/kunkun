@@ -1,6 +1,10 @@
 package com.hsc.kunkun.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
+import com.hsc.kunkun.controller.DeptController;
 import com.hsc.kunkun.dao.DeptDao;
 import com.hsc.kunkun.entity.Dept;
 import com.hsc.kunkun.service.DeptService;
@@ -10,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,7 +27,7 @@ import java.util.Optional;
 public class DeptServiceImpl implements DeptService {
     @Autowired
     private DeptDao deptDao;
-
+    private static Logger log = LoggerFactory.getLogger(DeptController.class);
     private static String createDepartment_url = "https://qyapi.weixin.qq.com/cgi-bin/department/create?access_token=ACCESS_TOKEN";
     private static String updateDepartment_url = "https://qyapi.weixin.qq.com/cgi-bin/department/update?access_token=ACCESS_TOKEN";
     private static String deleteDepartment_url = "https://qyapi.weixin.qq.com/cgi-bin/department/delete?access_token=ACCESS_TOKEN&id=ID";
@@ -30,19 +35,28 @@ public class DeptServiceImpl implements DeptService {
 
 
 
-    @Override
-    public void save(Dept dept) {
 
+    @Override
+    public String deleteDepartmentById(String accessToken,String id  ) {
+        //1.获取请求的url
+        deleteDepartment_url=deleteDepartment_url.replace("ACCESS_TOKEN", accessToken)
+                .replace("ID", id);
+
+        //2.调用接口，发送请求，删除部门
+        JSONObject jsonObject = WeiXinUtil.httpRequest(deleteDepartment_url, "GET", null);
+        System.out.println("jsonObject:"+jsonObject.toString());
+
+        //3.错误消息处理
+        if (null != jsonObject) {
+            if (0 != jsonObject.getInteger("errcode")) {
+                log.error("删除部门失败 errcode:{} errmsg:{}", jsonObject.getInteger("errcode"), jsonObject.getString("errmsg"));
+            }
+        }
+        return jsonObject.toString();
     }
 
     @Override
-    public void deleteById(Integer id) {
-
-    }
-
-    @Override
-    //1.创建部门
-    public void createDepartment(String accessToken, Dept department) {
+    public String createDepartment(String accessToken, Dept department) {
 
         //1.获取json字符串：将Department对象转换为json字符串
         Gson gson = new Gson();
@@ -50,16 +64,15 @@ public class DeptServiceImpl implements DeptService {
         System.out.println("jsonDepartment:" + jsonDepartment);
         //2.拼接请求的url
         createDepartment_url = createDepartment_url.replace("ACCESS_TOKEN", accessToken);
-
         //3.调用接口，发送请求，创建部门
         com.alibaba.fastjson.JSONObject jsonObject = WeiXinUtil.httpRequest(createDepartment_url, "POST", jsonDepartment);
         System.out.println("jsonObject:" + jsonObject.toString());
         if (null != jsonObject) {
             if (0 != jsonObject.getInteger("errcode")) {
                 System.out.println("创建部门失败 errcode:{} errmsg:{}"+jsonObject.getInteger("errcode")+jsonObject.getString("errmsg"));
-
             }
         }
+        return jsonObject.toString();
     }
 
     @Override
@@ -72,5 +85,33 @@ public class DeptServiceImpl implements DeptService {
         Optional<Dept> optional = deptDao.findById(id);
         Dept   dept =optional.get();
         return dept;
+    }
+
+
+    @Override
+    public List<String> getDepartmentListid(String accessToken, String departmentId) {
+        //1.获取请求的url
+        getDepartmentList_url=getDepartmentList_url.replace("ACCESS_TOKEN", accessToken)
+                .replace("ID", departmentId);
+
+        //2.调用接口，发送请求，获取成员
+        JSONObject jsonObject = WeiXinUtil.httpRequest(getDepartmentList_url, "GET", null);
+        JSONObject jsonx = JSON.parseObject(String.valueOf(jsonObject));
+        JSONArray ja = jsonx.getJSONArray("department");
+        String[] a=new String[ja.size()];
+        for (int i=0;i<ja.size();i++){
+            net.sf.json.JSONObject ob= net.sf.json.JSONObject.fromObject(ja.get(i));
+            String Id=ob.getString("id");
+            System.out.println("id:"+Id);
+            a[i]=Id;
+        }
+        //3.错误消息处理
+        if (null != jsonObject) {
+            if (0 != jsonObject.getInteger("errcode")) {
+                log.error("获取部门列表 errcode:{} errmsg:{}", jsonObject.getInteger("errcode"), jsonObject.getString("errmsg"));
+            }
+        }
+        List<String> deptIdList = Arrays.asList(a);
+        return  deptIdList;
     }
 }
