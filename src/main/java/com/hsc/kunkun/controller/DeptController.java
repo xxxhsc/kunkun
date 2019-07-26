@@ -23,19 +23,18 @@ public class DeptController {
 
     @Autowired
     private DeptService deptService;
-    private DeptDao deptDao;
     String accessToken = WeiXinUtil.getAccessToken(WeiXinParamesUtil.corpId, WeiXinParamesUtil.contactsSecret).getToken();
 
 
     /**
-     * 调用数据库部门数据并同步到企业微信
+     * 根据id调用数据库部门数据并同步到企业微信
      * @return
      */
-    @PostMapping("/createdept")
+    @PostMapping("/createdept/{id}")
     @ResponseBody
-    public String CreateDepartment() {
+    public String CreateDepartment(@PathVariable Integer id) {
     //1.创建Department对象，并将对象转换成json字符串
-    Dept department = deptService.findById(10);
+    Dept department = deptService.findById(id);
     //2.获取access_token:根据企业id和通讯录密钥获取access_token,并拼接请求url
     System.out.println("accessToken:" + accessToken);
     //3.创建部门
@@ -66,6 +65,7 @@ public class DeptController {
      * @param id
      * @return
      */
+
     @GetMapping("/deleteDept/{id}")
     @ResponseBody
     public String deleteDept(@PathVariable Integer id  ){
@@ -79,6 +79,7 @@ public class DeptController {
      * 查找企业微信上面的所有部门ID
      * @return
      */
+
     @GetMapping("/queryAllwxdept")
     @ResponseBody
     public List<String> queryAllwxdept(){
@@ -86,5 +87,13 @@ public class DeptController {
         return  list1;
     }
 
+
+    @RequestMapping("/creatAllDepartment")
+    @ResponseBody
+    public  List<Dept> creatAllDepartment(){
+        List<Dept> deptList = deptService.queryAll();
+        deptService.creatAllDepartment(accessToken,deptList);
+        return deptList;
+    }
 
 }

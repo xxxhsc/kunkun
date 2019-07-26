@@ -27,6 +27,7 @@ import java.util.Optional;
 public class DeptServiceImpl implements DeptService {
     @Autowired
     private DeptDao deptDao;
+    private DeptService deptService;
     private static Logger log = LoggerFactory.getLogger(DeptController.class);
     private static String createDepartment_url = "https://qyapi.weixin.qq.com/cgi-bin/department/create?access_token=ACCESS_TOKEN";
     private static String updateDepartment_url = "https://qyapi.weixin.qq.com/cgi-bin/department/update?access_token=ACCESS_TOKEN";
@@ -36,23 +37,18 @@ public class DeptServiceImpl implements DeptService {
 
 
 
+
+
     @Override
-    public String deleteDepartmentById(String accessToken,String id  ) {
-        //1.获取请求的url
-        deleteDepartment_url=deleteDepartment_url.replace("ACCESS_TOKEN", accessToken)
-                .replace("ID", id);
+    public List<Dept> queryAll() {
+        return deptDao.findAll();
+    }
 
-        //2.调用接口，发送请求，删除部门
-        JSONObject jsonObject = WeiXinUtil.httpRequest(deleteDepartment_url, "GET", null);
-        System.out.println("jsonObject:"+jsonObject.toString());
-
-        //3.错误消息处理
-        if (null != jsonObject) {
-            if (0 != jsonObject.getInteger("errcode")) {
-                log.error("删除部门失败 errcode:{} errmsg:{}", jsonObject.getInteger("errcode"), jsonObject.getString("errmsg"));
-            }
-        }
-        return jsonObject.toString();
+    @Override
+    public Dept findById(Integer id) {
+        Optional<Dept> optional = deptDao.findById(id);
+        Dept   dept =optional.get();
+        return dept;
     }
 
     @Override
@@ -76,17 +72,44 @@ public class DeptServiceImpl implements DeptService {
     }
 
     @Override
-    public List<Dept> queryAll() {
-        return deptDao.findAll();
+    public String deleteDepartmentById(String accessToken,String id  ) {
+        //1.获取请求的url
+        deleteDepartment_url=deleteDepartment_url.replace("ACCESS_TOKEN", accessToken)
+                .replace("ID", id);
+
+        //2.调用接口，发送请求，删除部门
+        JSONObject jsonObject = WeiXinUtil.httpRequest(deleteDepartment_url, "GET", null);
+        System.out.println("jsonObject:"+jsonObject.toString());
+
+        //3.错误消息处理
+        if (null != jsonObject) {
+            if (0 != jsonObject.getInteger("errcode")) {
+                log.error("删除部门失败 errcode:{} errmsg:{}", jsonObject.getInteger("errcode"), jsonObject.getString("errmsg"));
+            }
+        }
+        return jsonObject.toString();
     }
+
 
     @Override
-    public Dept findById(Integer id) {
-        Optional<Dept> optional = deptDao.findById(id);
-        Dept   dept =optional.get();
-        return dept;
-    }
+    public String updateDepartment(String accessToken, Dept department) {
+        //1.获取json字符串：将Department对象转换为json字符串
+        Gson gson = new Gson();
+        String jsonDepartment = gson.toJson(department);      //使用gson.toJson(jsonDepartment)即可将jsonDepartment对象顺序转成json
+        System.out.println("jsonDepartment:" + jsonDepartment);
+        //2.拼接请求的url
+        updateDepartment_url = updateDepartment_url.replace("ACCESS_TOKEN", accessToken);
 
+        //3.调用接口，发送请求，更新部门
+        com.alibaba.fastjson.JSONObject jsonObject = WeiXinUtil.httpRequest(updateDepartment_url, "POST", jsonDepartment);
+        System.out.println("jsonObject:" + jsonObject.toString());
+        if (null != jsonObject) {
+            if (0 != jsonObject.getInteger("errcode")) {
+                log.error("更新部门失败 errcode:{} errmsg:{}", jsonObject.getInteger("errcode"), jsonObject.getString("errmsg"));
+            }
+        }
+        return jsonObject.toString();
+    }
 
     @Override
     public List<String> getDepartmentListid(String accessToken, String departmentId) {
@@ -102,7 +125,7 @@ public class DeptServiceImpl implements DeptService {
         for (int i=0;i<ja.size();i++){
             net.sf.json.JSONObject ob= net.sf.json.JSONObject.fromObject(ja.get(i));
             String Id=ob.getString("id");
-            System.out.println("id:"+Id);
+//            System.out.println("id:"+Id);
             a[i]=Id;
         }
         //3.错误消息处理
@@ -114,4 +137,34 @@ public class DeptServiceImpl implements DeptService {
         List<String> deptIdList = Arrays.asList(a);
         return  deptIdList;
     }
+
+
+    @Override
+    public List<Dept> creatAllDepartment(String accessToken, List<Dept> departmentList) {
+        int i,j=0;
+        try {
+            List<String> departmentidList = getDepartmentListid(accessToken,"");
+            for (i = 0; i < departmentList.size(); i++) {
+                for(j=0;j<departmentidList.size();j++){
+//                    System.out.println("数据库数据："+departmentList.get(i).getId()+"企业微信数据："+departmentidList.get(j));
+                    if(departmentList.get(i).getId().toString().equals(departmentidList.get(j)))//判断数据库内数据是否已经在企业微信存在
+                    {
+                        System.out.println("更新部门："+departmentList.get(i));
+                        updateDepartment(accessToken,departmentList.get(i));
+                        break;
+                    }
+                }
+                if(j==departmentidList.size()){
+                    System.out.println("创建部门：："+departmentList.get(i));
+                    createDepartment(accessToken, departmentList.get(i));
+                }
+            }
+        }catch (Exception e ){
+            e.printStackTrace();
+        }
+        return departmentList;
+
+    }
+
+
 }

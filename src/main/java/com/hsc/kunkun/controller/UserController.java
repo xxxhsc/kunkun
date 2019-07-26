@@ -25,22 +25,15 @@ public class UserController {
     private UserService userService;
     String accessToken = WeiXinUtil.getAccessToken(WeiXinParamesUtil.corpId, WeiXinParamesUtil.contactsSecret).getToken();
 
-
+/*
+纯数据库操作
+ */
     @GetMapping("/queryAllUser")
     @ResponseBody
     public List<User> queryAll(User user){
         List<User> list1 =userService.queryAll();
         return  list1;
     }
-
-//    @PostMapping("/save")
-//    @ResponseBody
-//    public String save(User user)
-//    {
-//        return  userService.saveUser(user);
-//    }
-//
-
 
     @GetMapping("/delete/{id}")
     @ResponseBody
@@ -54,6 +47,25 @@ public class UserController {
         return "删除成功！";
     }
 
+
+/*
+调用数据库通过接口操作
+ */
+    @PostMapping("/createUser")
+    @ResponseBody
+    public  String createUser(User user)
+    {
+        return userService.createUser(accessToken,user);
+    }
+
+
+    @PostMapping("/createAllUser")
+    @ResponseBody
+    public  String createAllUser() {
+         List<User> userList=userService.queryAll();
+         return userService.creatAllUser(accessToken,userList).toString();
+    }
+
     @GetMapping("/getDepartmentUserid")
     @ResponseBody
     public  List<String > getDepartmentUserid(){
@@ -61,18 +73,35 @@ public class UserController {
         return userIdList;
     }
 
+
     @GetMapping("/batchdeleteUser")
     @ResponseBody
-    public  List<String >  batchdeleteUser() {
+    public  String  batchdeleteUser() {
         List<String> userIdList1 =userService.getDepartmentUserid(accessToken,"1","1");
         try{
-            List<String> userIdList2 =userService.batchdeleteUser(accessToken,userIdList1);
-            return userIdList2;
+            String s= userService.batchdeleteUser(accessToken,userIdList1);
+            return s;
         }catch (Exception e){
             e.printStackTrace();
         }
+        return userIdList1.toString();
+    }
 
-        return userIdList1;
+
+    @GetMapping("/deletewxUser/{userid}")
+    @ResponseBody
+    public String  deletewxUser(@PathVariable String userid){
+
+        return userService.deleteUser(accessToken,userid);
+    }
+
+
+
+    @GetMapping("/deleteNoSyncUser")
+    @ResponseBody
+    public  String deleteNoSyncUser(){
+        List<User> userList=userService.queryAll();
+        return userService.deleteNoSyncUser(accessToken,userList);
     }
 
 }

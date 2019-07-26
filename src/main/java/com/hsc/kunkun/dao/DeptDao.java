@@ -4,6 +4,7 @@ import com.hsc.kunkun.entity.Dept;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -17,5 +18,7 @@ public interface DeptDao extends JpaRepository<Dept,Integer>{
 
 
         Optional<Dept> findById (Integer id);
+
+
 
 }

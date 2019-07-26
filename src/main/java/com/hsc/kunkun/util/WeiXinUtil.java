@@ -22,6 +22,13 @@ public class WeiXinUtil {
     private static Logger log = LoggerFactory.getLogger(WeiXinUtil.class);
     public final static String access_token_url = "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={corpId}&corpsecret={corpsecret}";
 
+    /**
+     * 返回http，https请求json结果
+     * @param requestUrl
+     * @param requestMethod
+     * @param outputStr
+     * @return
+     */
     public static JSONObject httpRequest(String requestUrl, String requestMethod, String outputStr){
         JSONObject jsonObject = null;
         StringBuffer buffer = new StringBuffer();
