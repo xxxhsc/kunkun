@@ -31,7 +31,8 @@ public class UserServiceImpl implements UserService {
     private static String batchdeleteUser_url = "https://qyapi.weixin.qq.com/cgi-bin/user/batchdelete?access_token=ACCESS_TOKEN";
     private static String getDepartmentUser_url = "https://qyapi.weixin.qq.com/cgi-bin/user/simplelist?access_token=ACCESS_TOKEN&department_id=DEPARTMENT_ID&fetch_child=FETCH_CHILD";
     private static String getDepartmentUserDetails_url = "https://qyapi.weixin.qq.com/cgi-bin/user/list?access_token=ACCESS_TOKEN&department_id=DEPARTMENT_ID&fetch_child=FETCH_CHILD";
-
+    private static String batchCreatUserCSV_url="https://qyapi.weixin.qq.com/cgi-bin/batch/replaceuser?access_token=ACCESS_TOKEN";
+    private static String batchUpdateUserCSV_url="https://qyapi.weixin.qq.com/cgi-bin/batch/syncuser?access_token=ACCESS_TOKEN";
     @Autowired
     private UserDao userDao;
 
@@ -209,12 +210,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> creatAllUser(String accessToken, List<User> userList) {
+        long start=System.currentTimeMillis(); //获取开始时间
+
         int i,j=0;
         try {
             List<String> useridlist=getDepartmentUserid(accessToken,"1","1");
             for (i = 0; i < userList.size(); i++) {
                 for(j=0;j<useridlist.size();j++){
-//                    System.out.println("数据库数据："+userList.get(i).getUserid()+"企业微信数据："+useridlist.get(j));
                     if(userList.get(i).getUserid().equals(useridlist.get(j)))//判断数据库内数据是否已经存在企业微信
                     {
                          System.out.println("更新用户：："+userList.get(i));
@@ -230,12 +232,18 @@ public class UserServiceImpl implements UserService {
         }catch (Exception e ){
             e.printStackTrace();
         }
+
+        //要测试的程序或方法
+        long end=System.currentTimeMillis(); //获取结束时间
+
+        System.out.println("程序运行时间： "+(end-start)+"ms");
         return userList;
     }
 
     @Override
     public String deleteNoSyncUser(String accessToken, List<User> userList) {
         int i,j=0;
+        String result;
         try {
             List<String> useridlist=getDepartmentUserid(accessToken,"1","1");
             String[] b=new String[useridlist.size()];
@@ -255,11 +263,47 @@ public class UserServiceImpl implements UserService {
             }
             List<String> userIdList = Arrays.asList(b);
             System.out.println("数据库不存在该这些用户："+userIdList);
-            batchdeleteUser(accessToken,userIdList);
+            result=batchdeleteUser(accessToken,userIdList);
         }catch (Exception e ){
             e.printStackTrace();
             return "删除失败";
         }
-        return "成功删除不存在于数据库内的企业微信用户";
+        return result;
+    }
+
+    @Override
+    public String batchCreatUser(String accessToken, String media_idjson) {
+
+        //1.拼接请求的url
+        batchCreatUserCSV_url = batchCreatUserCSV_url.replace("ACCESS_TOKEN", accessToken);
+
+        //2.调用接口，发送请求，全量覆盖成员
+        JSONObject jsonObject = WeiXinUtil.httpRequest(batchCreatUserCSV_url, "POST", media_idjson);
+
+
+        if (null != jsonObject) {
+            if (0 != jsonObject.getInteger("errcode")) {
+                log.error("覆盖成员失败 errcode:{} errmsg:{}", jsonObject.getInteger("errcode"), jsonObject.getString("errmsg"));
+            }
+        }
+        System.out.println("jsonObject:" + jsonObject.toString());
+        return jsonObject.toString();
+    }
+
+    @Override
+    public String batchUpdateUser(String accessToken, String media_idjson) {
+        //1.拼接请求的url
+        batchUpdateUserCSV_url = batchUpdateUserCSV_url.replace("ACCESS_TOKEN", accessToken);
+        //2.调用接口，发送请求，全量更新成员
+        JSONObject jsonObject = WeiXinUtil.httpRequest(batchUpdateUserCSV_url, "POST", media_idjson);
+
+
+        if (null != jsonObject) {
+            if (0 != jsonObject.getInteger("errcode")) {
+                log.error("更新成员失败 errcode:{} errmsg:{}", jsonObject.getInteger("errcode"), jsonObject.getString("errmsg"));
+            }
+        }
+        System.out.println("jsonObject:" + jsonObject.toString());
+        return jsonObject.toString();
     }
 }

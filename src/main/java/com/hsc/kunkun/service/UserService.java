@@ -116,4 +116,8 @@ public interface UserService {
      */
     String deleteNoSyncUser (String accessToken,List<User> userList);
 
+
+    String batchCreatUser (String accessToken,String media_idjson);
+
+    String batchUpdateUser(String accessToken,String media_idjson);
 }

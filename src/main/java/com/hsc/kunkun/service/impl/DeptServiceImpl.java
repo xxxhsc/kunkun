@@ -13,7 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -27,13 +30,13 @@ import java.util.Optional;
 public class DeptServiceImpl implements DeptService {
     @Autowired
     private DeptDao deptDao;
-    private DeptService deptService;
     private static Logger log = LoggerFactory.getLogger(DeptController.class);
     private static String createDepartment_url = "https://qyapi.weixin.qq.com/cgi-bin/department/create?access_token=ACCESS_TOKEN";
     private static String updateDepartment_url = "https://qyapi.weixin.qq.com/cgi-bin/department/update?access_token=ACCESS_TOKEN";
     private static String deleteDepartment_url = "https://qyapi.weixin.qq.com/cgi-bin/department/delete?access_token=ACCESS_TOKEN&id=ID";
     private static String getDepartmentList_url = "https://qyapi.weixin.qq.com/cgi-bin/department/list?access_token=ACCESS_TOKEN&id=ID";
-
+    private static String uploadFile_url = "https://qyapi.weixin.qq.com/cgi-bin/media/upload?access_token=ACCESS_TOKEN&type=TYPE";
+    private static String uploadDepartmentCSV_url=" https://qyapi.weixin.qq.com/cgi-bin/batch/replaceparty?access_token=ACCESS_TOKEN";
 
 
 
@@ -167,4 +170,22 @@ public class DeptServiceImpl implements DeptService {
     }
 
 
+
+    @Override
+    public String batchDepartment(String accessToken, String media_idjson) {
+
+
+        //2.拼接请求的url
+        uploadDepartmentCSV_url = uploadDepartmentCSV_url.replace("ACCESS_TOKEN", accessToken);
+
+        //3.调用接口，发送请求，全量覆盖部门
+        com.alibaba.fastjson.JSONObject jsonObject = WeiXinUtil.httpRequest(uploadDepartmentCSV_url, "POST", media_idjson);
+        System.out.println("jsonObject:" + jsonObject.toString());
+        if (null != jsonObject) {
+            if (0 != jsonObject.getInteger("errcode")) {
+                log.error("更新部门失败 errcode:{} errmsg:{}", jsonObject.getInteger("errcode"), jsonObject.getString("errmsg"));
+            }
+        }
+        return jsonObject.toString();
+    }
 }

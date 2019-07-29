@@ -2,6 +2,7 @@ package com.hsc.kunkun.controller;
 
 import com.hsc.kunkun.dao.UserDao;
 import com.hsc.kunkun.entity.User;
+import com.hsc.kunkun.service.FileService;
 import com.hsc.kunkun.service.UserService;
 import com.hsc.kunkun.util.WeiXinParamesUtil;
 import com.hsc.kunkun.util.WeiXinUtil;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.Positive;
 import java.util.List;
@@ -23,6 +25,8 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private FileService fileService;
     String accessToken = WeiXinUtil.getAccessToken(WeiXinParamesUtil.corpId, WeiXinParamesUtil.contactsSecret).getToken();
 
 /*
@@ -59,7 +63,7 @@ public class UserController {
     }
 
 
-    @PostMapping("/createAllUser")
+    @GetMapping("/createAllUser")
     @ResponseBody
     public  String createAllUser() {
          List<User> userList=userService.queryAll();
@@ -78,13 +82,8 @@ public class UserController {
     @ResponseBody
     public  String  batchdeleteUser() {
         List<String> userIdList1 =userService.getDepartmentUserid(accessToken,"1","1");
-        try{
-            String s= userService.batchdeleteUser(accessToken,userIdList1);
-            return s;
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        return userIdList1.toString();
+
+        return userService.batchdeleteUser(accessToken,userIdList1);
     }
 
 
@@ -102,6 +101,22 @@ public class UserController {
     public  String deleteNoSyncUser(){
         List<User> userList=userService.queryAll();
         return userService.deleteNoSyncUser(accessToken,userList);
+    }
+
+    @RequestMapping("/batchCreatUser")
+    @ResponseBody
+    public  String batchCreatUser(MultipartFile file){
+        String media_idjson = fileService.uploadFile(accessToken,file) ;
+        System.out.println(media_idjson);
+        return userService.batchCreatUser(accessToken,media_idjson);
+    }
+
+    @RequestMapping("/batchUpdateUser")
+    @ResponseBody
+    public  String batchUpdateUser(MultipartFile file){
+        String media_idjson = fileService.uploadFile(accessToken,file) ;
+        System.out.println(media_idjson);
+        return userService.batchUpdateUser(accessToken,media_idjson);
     }
 
 }

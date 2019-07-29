@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>微信同步</title>
+</head>
+<body>
+<h1>调用API，操作企业微信数据</h1>
+<a th:href="@{~/batchdeleteUser}"><input type="button" value="批量删除成员"></a>删除部门不为1的企业微信用户</br></br>
+
+<h1>调用API，操作数据库同步数据</h1>
+<a th:href="@{~/createAllUser}"><input type="button"  value="成员全覆盖" ></a>覆盖成员，存在则更新，不存在则创建</br></br>
+<a th:href="@{~/creatAllDepartment}"><input type="button" value="部门全覆盖"></a>覆盖部门，存在则更新，不存在则创建</br></br>
+<a th:href="@{~/deleteNoSyncUser}"><input type="button" value="删除不同步成员"></a>删除不存在于数据库内的企业微信用户</br></br>
+
+
+<!--<h1>采用multipart提供的file.transfer方法上传文件</h1>-->
+<h1>调用API，上传CSV文件异步覆盖同步数据</h1>
+<p>全量覆盖部门</p>
+<form name="Form1" action="/batchDepartment" method="post"  enctype="multipart/form-data">
+    <input type="file" name="file">
+    <input type="submit" value="upload"/>
+</form>
+
+<p>全量覆盖成员</p>
+<form name="Form2" action="/batchCreatUser" method="post"  enctype="multipart/form-data">
+    <input type="file" name="file" >
+    <input type="submit" value="upload"/>
+</form>
+
+<p>增量更新成员</p>
+<form name="Form3" action="/batchUpdateUser" method="post"  enctype="multipart/form-data">
+    <input type="file" name="file">
+    <input type="submit" value="upload"/>
+</form>
+</body>
+</html>

@@ -3,15 +3,19 @@ package com.hsc.kunkun.controller;
 import com.hsc.kunkun.dao.DeptDao;
 import com.hsc.kunkun.entity.Dept;
 import com.hsc.kunkun.service.DeptService;
+import com.hsc.kunkun.service.FileService;
 import com.hsc.kunkun.util.WeiXinParamesUtil;
 import com.hsc.kunkun.util.WeiXinUtil;
 import com.sun.xml.internal.bind.v2.model.core.ID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
-import java.util.List;
-import java.util.Optional;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * @Author: hsc
@@ -23,6 +27,8 @@ public class DeptController {
 
     @Autowired
     private DeptService deptService;
+    @Autowired
+    private FileService fileService;
     String accessToken = WeiXinUtil.getAccessToken(WeiXinParamesUtil.corpId, WeiXinParamesUtil.contactsSecret).getToken();
 
 
@@ -94,6 +100,26 @@ public class DeptController {
         List<Dept> deptList = deptService.queryAll();
         deptService.creatAllDepartment(accessToken,deptList);
         return deptList;
+    }
+
+
+
+
+
+    @RequestMapping("/uploadFile")
+    @ResponseBody
+    public String uploadFile(MultipartFile file) {
+        System.out.println(file.getOriginalFilename());//打印文件上传名称
+        return fileService.uploadFile(accessToken,file) ;
+    }
+
+
+    @RequestMapping("/batchDepartment")
+    @ResponseBody
+    public String batchDepartment(MultipartFile file) {
+         String media_idjson = fileService.uploadFile(accessToken,file) ;
+         System.out.println(media_idjson);
+         return deptService.batchDepartment(accessToken,media_idjson);
     }
 
 }

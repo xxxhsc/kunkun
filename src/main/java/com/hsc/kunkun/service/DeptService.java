@@ -1,6 +1,7 @@
 package com.hsc.kunkun.service;
 
 import com.hsc.kunkun.entity.Dept;
+import org.springframework.web.multipart.MultipartFile;
 
 
 import java.util.List;
@@ -72,4 +73,5 @@ public interface DeptService {
 
 
 
+    String batchDepartment(String accessToken,String media_idjson);
 }
